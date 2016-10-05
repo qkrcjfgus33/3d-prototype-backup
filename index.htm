@@ -1,0 +1,159 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title> </title>
+<!--[if IE]>
+	<script src="base\excanvas.js"></script>
+	<![endif]-->
+	<script src="base\Event.js"></script>
+</head>
+
+<body>
+<div id='push'>z </div>
+<!--[if IE]>
+<input type='button' value='ie용' id='ie_canvas'></input>
+<![endif]-->
+<canvas id='cv' height='1000' width='1000'></canvas>
+
+<script>
+/* 편집구간*/
+center = new Array(300,300,300);
+
+//사각형.. 현제 점의 위치값
+x=new Array(200,400,400,200);
+y=new Array(400,400,200,200);
+z=new Array(300,300,300,300);
+
+/*편집구간 end*/
+
+radian = Math.PI/180; //1도 라디안값
+//alert(radian);
+t=0;
+sx=new Array();
+sy=new Array();
+xp=0;
+yp=0;
+
+rx=new Array();
+ry=new Array();
+
+xval=90;
+yval=90;
+
+
+canvas = document.getElementById('cv');
+
+
+if( document.getElementById('ie_canvas')!=null){
+	var button = document.getElementById('ie_canvas');
+
+	var canvasFun = function() {
+		ctx =  canvas.getContext('2d');
+		ctx.beginPath();
+		for(var len = x.length-1 ; len>=0 ; len--){
+			if(t==0)
+				ctx.moveTo(x[len],y[len]);
+			else
+				ctx.lineTo(x[len],y[len]);
+			t=1;
+		}
+		ctx.lineTo(x[x.length-1],x[x.length-1]);
+		ctx.strokeStyle = 'red';
+		ctx.save();
+		ctx.stroke();
+	}
+	Handler.add(button,'click',canvasFun);
+}else{
+
+	ctx =  canvas.getContext('2d');
+	ctx.beginPath();
+	for(var len = x.length-1 ; len>=0 ; len--){
+		if(t==0)
+			ctx.moveTo(x[len],y[len]);
+		else
+			ctx.lineTo(x[len],y[len]);
+		t=1;
+	}
+	ctx.lineTo(x[x.length-1],x[x.length-1]);
+	ctx.strokeStyle = 'red';
+	ctx.save();
+	ctx.stroke();
+}
+//*/
+function pro(e){
+
+	xp=e.clientX;
+	yp=e.clientY;
+	Handler.add(canvas,'mousemove',save);
+	
+}
+function save(e){
+	sx.push(e.clientX-xp);	
+	sy.push(e.clientY-yp);
+	xp=e.clientX;
+	yp=e.clientY;
+	push.firstChild.data='xp: '+xp+', yp: '+yp;
+	move();
+
+}
+
+function move(){
+//alert('?');
+	Handler.remove(canvas,'mousemove',save);
+	var len=x.length;
+	while(sx.length!=0){
+	//alert(sx.length);
+		xval+=sx.pop();
+		yval+=sy.pop();
+		//alert(xval);
+		push.firstChild.data='xp: '+xval+', yp: '+yval;
+		for(var len=x.length-1 ; len >= 0 ; len--){
+			var mr = Math.pow((Math.pow(x[len]-center[0],2)+Math.pow(y[len]-center[1],2)+Math.pow(z[len]-center[2],2)),1/2);
+			rx[len] = center[0]+mr*Math.cos(radian*x[len]*xval/(2*mr))*Math.sin(radian*y[len]*yval/(2*mr));
+			ry[len] = center[1]+mr*Math.cos(radian*y[len]*yval/(2*mr));
+			//alert(rx[len]);
+		}
+	}
+	//*
+	//alert('?');
+	ctx.beginPath();
+	clearCanvas(canvas);
+	for(var len = rx.length-1 ; len>=0 ; len--){
+		if(t==0)
+			ctx.moveTo(rx[len],ry[len]);
+		else
+			ctx.lineTo(rx[len],ry[len]);
+		t=1;
+	}
+	ctx.lineTo(rx[rx.length-1],ry[rx.length-1]);
+	ctx.strokeStyle = 'red';
+	ctx.stroke();
+	//*/
+	Handler.add(canvas,'mousemove',save);
+}
+function end() {
+	Handler.remove(canvas,'mousemove',save);
+}
+
+Handler.add(canvas,'mousedown',pro);
+Handler.add(canvas,'mouseup',end);
+
+
+var push = document.getElementById('push');
+push.firstChild.data='xp: '+xval+', yp: '+yval;
+
+
+function clearCanvas(cv) {
+	var ctx = cv.getContext('2d');
+	// 픽셀 정리
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    // 컨텍스트 리셋
+    ctx.beginPath();
+}
+
+</script>
+</body>
+</html>
